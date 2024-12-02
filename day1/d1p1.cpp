@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-// Function to read the columns from a file into integer vectors
 bool readColumns(const std::string &filename, std::vector<int> &column1,
                  std::vector<int> &column2) {
   std::ifstream file(filename);
+
   if (!file) {
     std::cerr << "Unable to open file: " << filename << "\n";
     return false;
@@ -21,7 +21,6 @@ bool readColumns(const std::string &filename, std::vector<int> &column1,
     std::istringstream iss(line);
     int col1, col2;
 
-    // Read integers into variables and add to vectors
     if (iss >> col1 >> col2) {
       column1.push_back(col1);
       column2.push_back(col2);
