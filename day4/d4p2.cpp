@@ -1,110 +1,43 @@
+#pragma region Includes
 #include <fstream>
 #include <iostream>
-#include <regex>
+#include <sstream>
 #include <string>
 
-std::string readFileIntoString(const std::string &filename) {
-  std::ifstream ifs(filename);
-  std::string data((std::istreambuf_iterator<char>(ifs)),
-                   (std::istreambuf_iterator<char>()));
-  return data;
+#include <cassert>
+#include <vector>
+using namespace std;
+
+#pragma region InputFile
+fstream get_input() {
+  fstream f("input.txt", ios::in);
+  return f;
 }
+#pragma endregion
 
-std::string strip(std::string s) {
-  std::regex re("do\\(\\)|don't\\(\\)|mul\\((\\d+),(\\d+)\\)");
+int main() {
+  fstream f = get_input();
+  string ln;
 
-  std::string result;
-
-  // Iterator to find matches
-  auto begin = std::sregex_iterator(s.begin(), s.end(), re);
-  auto end = std::sregex_iterator();
-
-  // Concatenate all matches
-  for (std::sregex_iterator i = begin; i != end; ++i) {
-    result += i->str();
+  vector<string> grid;
+  while (getline(f, ln)) {
+    grid.push_back(ln);
   }
 
-  std::cout << "Stripped corrupted characters: " << result << std::endl;
+  long tot = 0;
 
-  return result;
-}
+  for (int i = 1; i < grid.size() - 1; i++) {
+    for (int j = 1; j < grid[i].length() - 1; j++) {
+      stringstream left, right;
+      left << grid[i - 1][j - 1] << grid[i][j] << grid[i + 1][j + 1];
+      right << grid[i + 1][j - 1] << grid[i][j] << grid[i - 1][j + 1];
 
-std::string removeDonts(std::string s) {
-  std::regex re("don't\\(\\).*?do\\(\\)");
-
-  std::string result = std::regex_replace(s, re, "");
-
-  std::regex reDoDont(
-      "don't\\(\\)|do\\(\\)"); // HACK: Remove remaining ones if any
-  result = std::regex_replace(result, reDoDont, "");
-
-  std::cout << "Removed don'ts: " << result << std::endl;
-
-  return result;
-}
-
-std::string createExpression(std::string s) {
-  std::regex re("mul\\((\\d+),(\\d+)\\)");
-
-  std::string result = std::regex_replace(s, re, "$1*$2+");
-
-  std::regex reTrailingPlus("\\+$");
-  result = std::regex_replace(result, reTrailingPlus, "");
-
-  std::cout << "Created expression: " << result << std::endl;
-  return result;
-}
-
-int multiply(std::string e) {
-  std::stringstream ss(e);
-  int result = 1;
-  std::string part;
-
-  while (std::getline(ss, part, '*')) {
-    // If it's the first part, set result to that number
-    if (result == 1) {
-      result = std::stoi(part);
-    } else {
-      result *= std::stoi(part); // Multiply the number
+      string l = left.str(), r = right.str();
+      if ((l == "MAS" || l == "SAM") && (r == "MAS" || r == "SAM")) {
+        tot++;
+      }
     }
   }
-  return result;
+
+  cout << "P2: " << tot << endl;
 }
-
-int evaluateExpression(std::string e) {
-  // Split using stringstream
-  std::stringstream ss(e);
-  std::vector<std::string> parts;
-  std::string part;
-
-  while (std::getline(ss, part, '+')) {
-    parts.push_back(part);
-  }
-
-  int result = 0;
-  int currentValue;
-
-  for (const auto &p : parts) {
-    result += multiply(p);
-  }
-
-  std::cout << "Result: " << result << std::endl;
-  return result;
-}
-
-#ifndef RUNNING_TESTS // If not running tests, run the main program
-
-int main(int argc, char **argv) {
-  std::string filename = "input.txt";
-  std::string data;
-  data = readFileIntoString(filename);
-
-  data = strip(data);
-  data = removeDonts(data);
-  std::string expression = createExpression(data);
-  int result = evaluateExpression(expression);
-
-  return 0;
-}
-
-#endif // RUNNING_TESTS
